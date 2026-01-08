@@ -45,10 +45,10 @@ class BassettiBetaDPY_H1_MCMC:
         self.s_0 = hyperparams.get('s_0', 0.1)
         self.lambda_param = hyperparams.get('lambda', 1.0)
 
-        # MCMC state variables
-        self.theta1 = 1.0
-        self.theta2 = 1.0
-        self.alpha = 0.0
+        # MCMC state variables (FIXED - Pitman-Yor)
+        self.theta1 = 10.0  # Fixed - very high to strongly favor more clusters
+        self.theta2 = 10.0  # Fixed
+        self.alpha = 0.05   # Fixed - Very small Pitman-Yor discount
 
         # Allocation variables D_it
         self.D1 = np.zeros(self.T1, dtype=int)
@@ -223,8 +223,9 @@ class BassettiBetaDPY_H1_MCMC:
             b_v2 = self.theta2 + self.alpha * (k+1) + np.sum(A2[k+1:])
             self.V2[k] = beta.rvs(a_v2, b_v2)
 
-        # Sample hyperparameters phi using Metropolis-Hastings
-        self._sample_phi_mh(D_star, A1, A2)
+        # Sample hyperparameters phi using Metropolis-Hastings with informative priors
+        # DISABLED: Keep hyperparameters fixed
+        # self._sample_phi_mh(D_star, A1, A2)
 
     def _sample_phi_mh(self, D_star, A1, A2):
         """
@@ -297,6 +298,21 @@ class BassettiBetaDPY_H1_MCMC:
                 log_acc += betaln(a_prop, b_prop)
                 log_acc -= (a_prop - 1) * np.log(self.V2[k])
                 log_acc -= (b_prop - 1) * np.log(1 - self.V2[k])
+
+        # Prior contributions
+        # theta1 ~ Gamma(2, 2): log p(theta1) = (a-1)*log(theta1) - b*theta1 + const
+        a_theta, b_theta = 2.0, 2.0
+        log_acc += (a_theta - 1) * (np.log(theta1_prop) - np.log(self.theta1))
+        log_acc -= b_theta * (theta1_prop - self.theta1)
+
+        # theta2 ~ Gamma(2, 2)
+        log_acc += (a_theta - 1) * (np.log(theta2_prop) - np.log(self.theta2))
+        log_acc -= b_theta * (theta2_prop - self.theta2)
+
+        # alpha ~ Beta(1, 10): log p(alpha) = (a-1)*log(alpha) + (b-1)*log(1-alpha) + const
+        a_alpha, b_alpha = 1.0, 10.0
+        log_acc += (a_alpha - 1) * (np.log(alpha_prop) - np.log(self.alpha))
+        log_acc += (b_alpha - 1) * (np.log(1 - alpha_prop) - np.log(1 - self.alpha))
 
         # Jacobian for transformation
         log_acc += xi_prop[0] - xi_current[0]  # theta1
