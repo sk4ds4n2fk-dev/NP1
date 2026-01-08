@@ -46,9 +46,9 @@ class BassettiBetaDPY_H1_MCMC:
         self.lambda_param = hyperparams.get('lambda', 1.0)
 
         # MCMC state variables (FIXED - Pitman-Yor)
-        self.theta1 = 5.0  # Fixed - higher to favor more clusters
-        self.theta2 = 5.0  # Fixed
-        self.alpha = 0.1   # Fixed - Small Pitman-Yor discount (must be > 0)
+        self.theta1 = 10.0  # Fixed - very high to strongly favor more clusters
+        self.theta2 = 10.0  # Fixed
+        self.alpha = 0.05   # Fixed - Very small Pitman-Yor discount
 
         # Allocation variables D_it
         self.D1 = np.zeros(self.T1, dtype=int)
