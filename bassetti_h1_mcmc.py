@@ -74,6 +74,7 @@ class BassettiBetaDPY_H1_MCMC:
             'alpha': [],
             'n_clusters_1': [],
             'n_clusters_2': [],
+            'n_atoms': [],
             'D1': [],
             'D2': []
         }
@@ -431,6 +432,7 @@ class BassettiBetaDPY_H1_MCMC:
                 self.samples['alpha'].append(self.alpha)
                 self.samples['n_clusters_1'].append(len(np.unique(self.D1)))
                 self.samples['n_clusters_2'].append(len(np.unique(self.D2)))
+                self.samples['n_atoms'].append(len(self.psi))  # Total atoms created
                 self.samples['D1'].append(self.D1.copy())
                 self.samples['D2'].append(self.D2.copy())
 
@@ -461,7 +463,7 @@ class BassettiBetaDPY_H1_MCMC:
         """
         Plot MCMC trace plots.
         """
-        fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+        fig, axes = plt.subplots(3, 3, figsize=(15, 11))
 
         # Theta1
         axes[0, 0].plot(self.samples['theta1'])
@@ -481,27 +483,43 @@ class BassettiBetaDPY_H1_MCMC:
         axes[0, 2].set_xlabel('Iteration')
         axes[0, 2].grid(True, alpha=0.3)
 
-        # Number of clusters - Component 1
+        # Number of occupied clusters - Component 1
         axes[1, 0].plot(self.samples['n_clusters_1'])
-        axes[1, 0].set_title('Number of Clusters (Component 1)')
+        axes[1, 0].set_title('Occupied Clusters (Component 1)')
         axes[1, 0].set_xlabel('Iteration')
-        axes[1, 0].set_ylabel('K₁')
+        axes[1, 0].set_ylabel('K₁ occupied')
         axes[1, 0].grid(True, alpha=0.3)
 
-        # Number of clusters - Component 2
+        # Number of occupied clusters - Component 2
         axes[1, 1].plot(self.samples['n_clusters_2'])
-        axes[1, 1].set_title('Number of Clusters (Component 2)')
+        axes[1, 1].set_title('Occupied Clusters (Component 2)')
         axes[1, 1].set_xlabel('Iteration')
-        axes[1, 1].set_ylabel('K₂')
+        axes[1, 1].set_ylabel('K₂ occupied')
         axes[1, 1].grid(True, alpha=0.3)
 
-        # Posterior distribution of K
-        axes[1, 2].hist(self.samples['n_clusters_1'], bins=20, alpha=0.6, label='Component 1')
-        axes[1, 2].hist(self.samples['n_clusters_2'], bins=20, alpha=0.6, label='Component 2')
-        axes[1, 2].set_title('Posterior Distribution of K')
-        axes[1, 2].set_xlabel('Number of Clusters')
-        axes[1, 2].legend()
+        # Total number of atoms created
+        axes[1, 2].plot(self.samples['n_atoms'])
+        axes[1, 2].set_title('Total Atoms Created')
+        axes[1, 2].set_xlabel('Iteration')
+        axes[1, 2].set_ylabel('K total')
         axes[1, 2].grid(True, alpha=0.3)
+
+        # Posterior distribution of occupied K
+        axes[2, 0].hist(self.samples['n_clusters_1'], bins=20, alpha=0.6, label='Component 1')
+        axes[2, 0].hist(self.samples['n_clusters_2'], bins=20, alpha=0.6, label='Component 2')
+        axes[2, 0].set_title('Posterior Distribution (Occupied K)')
+        axes[2, 0].set_xlabel('Number of Clusters')
+        axes[2, 0].legend()
+        axes[2, 0].grid(True, alpha=0.3)
+
+        # Posterior distribution of total atoms
+        axes[2, 1].hist(self.samples['n_atoms'], bins=20, alpha=0.6, color='green')
+        axes[2, 1].set_title('Posterior Distribution (Total Atoms)')
+        axes[2, 1].set_xlabel('Number of Atoms')
+        axes[2, 1].grid(True, alpha=0.3)
+
+        # Hide unused subplot
+        axes[2, 2].axis('off')
 
         plt.tight_layout()
         return fig
