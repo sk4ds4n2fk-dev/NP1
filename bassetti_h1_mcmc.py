@@ -45,10 +45,10 @@ class BassettiBetaDPY_H1_MCMC:
         self.s_0 = hyperparams.get('s_0', 0.1)
         self.lambda_param = hyperparams.get('lambda', 1.0)
 
-        # MCMC state variables
-        self.theta1 = 1.0
-        self.theta2 = 1.0
-        self.alpha = 0.0
+        # MCMC state variables (FIXED - not sampled)
+        self.theta1 = 1.0  # Fixed
+        self.theta2 = 1.0  # Fixed
+        self.alpha = 0.5   # Fixed discount parameter
 
         # Allocation variables D_it
         self.D1 = np.zeros(self.T1, dtype=int)
@@ -224,7 +224,8 @@ class BassettiBetaDPY_H1_MCMC:
             self.V2[k] = beta.rvs(a_v2, b_v2)
 
         # Sample hyperparameters phi using Metropolis-Hastings
-        self._sample_phi_mh(D_star, A1, A2)
+        # DISABLED: Fix hyperparameters to avoid explosion
+        # self._sample_phi_mh(D_star, A1, A2)
 
     def _sample_phi_mh(self, D_star, A1, A2):
         """
